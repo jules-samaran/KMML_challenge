@@ -19,8 +19,8 @@ class SVM:
 
         # optimize
         alpha = cp.Variable(n)
-        obj = cp.Minimize(cp.quad_form(alpha, K) - 2 * alpha@y)
-        constraints = [- y * alpha <= 0, y * alpha <= 1/(2 * n * self.lamb)]
+        obj = cp.Maximize(2 * alpha@y - cp.quad_form(alpha, K))
+        constraints = [- cp.multiply(y, alpha) <= 0, cp.multiply(y, alpha) <= 1/(2 * n * self.lamb)]
         prob = cp.Problem(obj, constraints)
         prob.solve()
         self.alpha = alpha.value
@@ -32,12 +32,12 @@ class SVM:
         return np.where(output > 0, 1, - 1)
 
 
-def main():
-    n = 1000
-    lamb = 1000
+def test_svm():
+    n = 100
+    lamb = 1 / (2 * n)
     beta = np.random.randn(10)
     X = np.random.randn(n, 10)
-    logit = X@beta
+    logit = X @ beta
     y = np.where(logit > 0, 1, -1)
 
     X_test = np.random.randn(10, 10)
@@ -48,13 +48,11 @@ def main():
     svm.fit(X, y)
     y_pred = svm.predict(X_test)
 
-    from sklearn import svm
-    clf = svm.SVC(C=1)
-    clf.fit(X, y)
-    sklearn_pred = clf.predict(X_test)
-    print(y_pred)
-    print(sklearn_pred)
-    print(y_test)
+    assert (y_pred == y_test).all()
+
+
+def main():
+    test_svm()
 
 
 if __name__ == "__main__":
