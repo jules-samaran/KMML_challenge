@@ -9,19 +9,18 @@ class KRR:
         self.lamb = lamb
         self.X = None
         self.k_name = k_name
-        self.K = None
         self.alpha = None
 
     def fit(self, X, y):
         # Problem data.
         self.X = X
-        self.K = kernel_function(self.k_name, self.X, self.X)
-        n = self.K.shape[0]
+        K = kernel_function(self.k_name, self.X, self.X)
+        n = K.shape[0]
 
         # Construct the problem.
         alpha = cp.Variable((n,1))
-        err = (1/n) * cp.sum_squares(self.K @ alpha - y)
-        reg = self.lamb * cp.quad_form(alpha, self.K)
+        err = (1/n) * cp.sum_squares(K @ alpha - y)
+        reg = self.lamb * cp.quad_form(alpha, K)
         obj = err + reg
         objective = cp.Minimize(obj)
         problem = cp.Problem(objective)
@@ -115,6 +114,14 @@ def test_svm():
     y_pred = svm.predict(X_test)
 
     assert (y_pred == y_test).all()
+
+
+models = {"SVM": SVM, "KRR": KRR}
+
+
+def create_model(cfg):
+    model = models[cfg.MODEL_NAME](**cfg.MODEL)
+
 
 
 def main():
