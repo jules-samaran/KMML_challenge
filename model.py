@@ -38,7 +38,7 @@ class KRR:
 
 def test_KRR():
     # Generate simulated data
-    n = 1000
+    n = 10
     tol = 1e-3
 
     X = np.random.randn(n, 10)
@@ -55,16 +55,17 @@ def test_KRR():
     for lamb in [1, 10, 100]:
         krr = KRR("linear", lamb=lamb)
         krr.fit(X, y)
-        y_pred = krr.predict(X_test)
-        print(y_pred[:,0])
-        print(y_test)
+        try:
+            _ = krr.predict(X_test)
+        except:
+            raise Error('Problem with predict function.')
         alpha_opt = krr.alpha
-        alpha_ana = np.linalg.inv(krr.K - lamb * n * np.eye(n)) @ y
-        print(np.mean(alpha_ana - alpha_opt))
+        alpha_ana = np.linalg.inv(krr.K + lamb * n * np.eye(n)) @ y
         err = np.linalg.norm(alpha_ana - alpha_opt)
-        assert err < tol, f'solution to far away from the real one {err:.3f}'
-        print(f'Test for lambda={lamb} ok')
 
+        assert err < tol, f'solution to far away from the real one {err:.3f}'
+
+        print(f'Test for lambda={lamb} ok')
 
 class SVM:
 
