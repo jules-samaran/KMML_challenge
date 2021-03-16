@@ -4,7 +4,8 @@ from kernel import kernel_function
 
 
 class KRR:
-    def __init__(self, k_name, lamb):
+    def __init__(self, k_name, lamb=1):
+        self.name = "KRR"
         self.lamb = lamb
         self.X = None
         self.k_name = k_name
@@ -49,7 +50,6 @@ def test_KRR():
 
     X_test = np.random.randn(10, 10)
     logit_test = X_test @ beta
-    y_test = np.where(logit_test > 0, 1, - 1)
 
     # Run KRR and compare with analytical solution
     for lamb in [1, 10, 100]:
@@ -67,9 +67,11 @@ def test_KRR():
 
         print(f'Test for lambda={lamb} ok')
 
+
 class SVM:
 
-    def __init__(self, k_name, lamb):
+    def __init__(self, k_name, lamb=1):
+        self.name = "SVM"
         self.alpha = None
         self.k_name = k_name
         self.lamb = lamb
