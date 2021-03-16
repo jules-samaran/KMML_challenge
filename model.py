@@ -4,22 +4,22 @@ from kernel import kernel_function
 
 
 class KRR:
-    def __init__(self, k_name, lamb):
+    def __init__(self, k_name, lamb=1.):
+        self.name = "KRR"
         self.lamb = lamb
         self.X = None
         self.k_name = k_name
-        self.K = None
         self.alpha = None
 
     def fit(self, X, y):
         # Problem data.
         self.X = X
-        self.K = kernel_function(self.k_name, self.X, self.X)
-        n = self.K.shape[0]
+        K = kernel_function(self.k_name, self.X, self.X)
+        n = K.shape[0]
 
         # Construct the problem.
         alpha = cp.Variable((n,1))
-        err = (1/n) * cp.sum_squares(self.K @ alpha - y)
+        err = (1/n) * cp.sum_squares(K @ alpha - y)
         reg = self.lamb * cp.quad_form(alpha, self.K)
         obj = err + reg
         objective = cp.Minimize(obj)
@@ -49,7 +49,6 @@ def test_KRR():
 
     X_test = np.random.randn(10, 10)
     logit_test = X_test @ beta
-    y_test = np.where(logit_test > 0, 1, - 1)
 
     # Run KRR and compare with analytical solution
     for lamb in [1, 10, 100]:
@@ -67,9 +66,11 @@ def test_KRR():
 
         print(f'Test for lambda={lamb} ok')
 
+
 class SVM:
 
-    def __init__(self, k_name, lamb):
+    def __init__(self, k_name, lamb=1.):
+        self.name = "SVM"
         self.alpha = None
         self.k_name = k_name
         self.lamb = lamb
