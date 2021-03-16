@@ -1,0 +1,14 @@
+---
+MODEL_NAME: SVM
+
+grid_hparams:
+  k_name: ["linear"]
+  lamb: [1e-2, 1e-1, 1, 10, 100]
+
+DATA:
+  type: "numerical"
+
+N_FOLDS: 10
+
+DESCRIPTION: ""
+

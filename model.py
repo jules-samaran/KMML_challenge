@@ -20,7 +20,7 @@ class KRR:
         # Construct the problem.
         alpha = cp.Variable((n,1))
         err = (1/n) * cp.sum_squares(K @ alpha - y)
-        reg = self.lamb * cp.quad_form(alpha, self.K)
+        reg = self.lamb * cp.quad_form(alpha, K)
         obj = err + reg
         objective = cp.Minimize(obj)
         problem = cp.Problem(objective)
@@ -114,6 +114,14 @@ def test_svm():
     y_pred = svm.predict(X_test)
 
     assert (y_pred == y_test).all()
+
+
+models = {"SVM": SVM, "KRR": KRR}
+
+
+def create_model(cfg):
+    model = models[cfg.MODEL_NAME](**cfg.MODEL)
+
 
 
 def main():
