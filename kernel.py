@@ -11,5 +11,3 @@ def kernel_function(kernel_name, X1, X2, params={}):
         return np.exp(-(0.5 * 1/s**2) * quad_term)
     else:
         raise NameError("Kernel name not recognized")
-
-kernel_function("gaussian", 1, 1)
