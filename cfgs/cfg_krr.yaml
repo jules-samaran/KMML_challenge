@@ -1,0 +1,14 @@
+---
+MODEL_NAME: KRR
+
+grid_hparams:
+  k_name: ["linear"]
+  lamb: [0.001, 0.01, 0.1, 1.]
+
+DATA:
+  type: "numerical"
+
+N_FOLDS: 10
+
+DESCRIPTION: ""
+
