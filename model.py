@@ -18,7 +18,7 @@ class KRR:
         n = K.shape[0]
 
         # Construct the problem.
-        alpha = cp.Variable((n,1))
+        alpha = cp.Variable(n)
         err = (1/n) * cp.sum_squares(K @ alpha - y)
         reg = self.lamb * cp.quad_form(alpha, K)
         obj = err + reg
@@ -45,7 +45,7 @@ def test_KRR():
     beta = np.random.randn(10)
     logit = X @ beta
     y = np.where(logit > 0, 1, -1)
-    y = y.reshape((y.shape[0], 1))
+    # y = y.reshape((y.shape[0], 1))
 
     X_test = np.random.randn(10, 10)
     logit_test = X_test @ beta
@@ -59,7 +59,7 @@ def test_KRR():
         except:
             raise Error('Problem with predict function.')
         alpha_opt = krr.alpha
-        alpha_ana = np.linalg.inv(krr.K + lamb * n * np.eye(n)) @ y
+        alpha_ana = np.linalg.inv(kernel_function(krr.k_name, krr.X, krr.X) + lamb * n * np.eye(n)) @ y
         err = np.linalg.norm(alpha_ana - alpha_opt)
 
         assert err < tol, f'solution to far away from the real one {err:.3f}'
@@ -87,7 +87,7 @@ class SVM:
         obj = cp.Maximize(2 * alpha@y - cp.quad_form(alpha, K))
         constraints = [- cp.multiply(y, alpha) <= 0, cp.multiply(y, alpha) <= 1/(2 * n * self.lamb)]
         prob = cp.Problem(obj, constraints)
-        prob.solve()
+        prob.solve(verbose=True)
         self.alpha = alpha.value
         self.X = X
 
@@ -113,14 +113,14 @@ def test_svm():
     svm.fit(X, y)
     y_pred = svm.predict(X_test)
 
-    assert (y_pred == y_test).all()
+    assert (y_pred == y_test).all(), print(y_pred - y_test)
 
 
-models = {"SVM": SVM, "KRR": KRR}
+models_dic = {"SVM": SVM, "KRR": KRR}
 
 
-def create_model(cfg):
-    model = models[cfg.MODEL_NAME](**cfg.MODEL)
+def create_model(name, params):
+    model = models_dic[name](**params)
 
 
 

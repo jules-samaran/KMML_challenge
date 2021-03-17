@@ -1,5 +1,5 @@
 ---
-MODEL_NAME: SVM
+MODEL_NAME: KRR
 
 grid_hparams:
   k_name: ["linear"]
