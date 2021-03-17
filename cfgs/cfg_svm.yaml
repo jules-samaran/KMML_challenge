@@ -3,8 +3,8 @@ MODEL_NAME: SVM
 
 grid_hparams:
   k_name: ["gaussian"]
-  lamb: [0.1]
-  sigma: [1.]
+  lamb: [0.001, 0.01, 0.1, 1.]
+  sigma: [0.001, 0.01, 0.1, 1.]
 
 DATA:
   type: "numerical"
