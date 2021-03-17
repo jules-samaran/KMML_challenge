@@ -1,20 +1,22 @@
 import numpy as np
 import cvxpy as cp
 from kernel import kernel_function
+from sklearn.linear_model import Ridge
 
 
 class KRR:
-    def __init__(self, k_name, lamb=1.):
+    def __init__(self, k_name, lamb=1., sigma=1.):
         self.name = "KRR"
         self.lamb = lamb
         self.X = None
         self.k_name = k_name
         self.alpha = None
+        self.k_params = {"sigma": sigma}
 
     def fit(self, X, y):
         # Problem data.
         self.X = X
-        K = kernel_function(self.k_name, self.X, self.X)
+        K = kernel_function(self.k_name, self.X, self.X, self.k_params)
         n = K.shape[0]
 
         # Construct the problem.
@@ -30,7 +32,7 @@ class KRR:
         self.alpha = alpha.value
 
     def predict(self, X_test):
-        K = kernel_function(self.k_name, X_test, self.X)
+        K = kernel_function(self.k_name, X_test, self.X, self.k_params)
         pred = K @ self.alpha
         pred = np.where(pred > 0, 1, -1)
         return pred
@@ -59,7 +61,7 @@ def test_KRR():
         except:
             raise Error('Problem with predict function.')
         alpha_opt = krr.alpha
-        alpha_ana = np.linalg.inv(kernel_function(krr.k_name, krr.X, krr.X) + lamb * n * np.eye(n)) @ y
+        alpha_ana = np.linalg.inv(kernel_function("linear", krr.X, krr.X) + lamb * n * np.eye(n)) @ y
         err = np.linalg.norm(alpha_ana - alpha_opt)
 
         assert err < tol, f'solution to far away from the real one {err:.3f}'
@@ -69,30 +71,31 @@ def test_KRR():
 
 class SVM:
 
-    def __init__(self, k_name, lamb=1.):
+    def __init__(self, k_name, lamb=1., sigma=1.):
         self.name = "SVM"
         self.alpha = None
         self.k_name = k_name
         self.lamb = lamb
         self.X = None
+        self.k_params = {"sigma": sigma}
 
     def fit(self, X, y):
         n = X.shape[0]
 
         # initialize
-        K = kernel_function(self.k_name, X, X)
+        K = kernel_function(self.k_name, X, X, self.k_params)
 
         # optimize
         alpha = cp.Variable(n)
         obj = cp.Maximize(2 * alpha@y - cp.quad_form(alpha, K))
         constraints = [- cp.multiply(y, alpha) <= 0, cp.multiply(y, alpha) <= 1/(2 * n * self.lamb)]
         prob = cp.Problem(obj, constraints)
-        prob.solve(verbose=True)
+        prob.solve()
         self.alpha = alpha.value
         self.X = X
 
     def predict(self, X_test):
-        K = kernel_function(self.k_name, X_test, self.X)
+        K = kernel_function(self.k_name, X_test, self.X, self.k_params)
         output = K@self.alpha
         return np.where(output > 0, 1, - 1)
 
@@ -117,11 +120,6 @@ def test_svm():
 
 
 models_dic = {"SVM": SVM, "KRR": KRR}
-
-
-def create_model(name, params):
-    model = models_dic[name](**params)
-
 
 
 def main():

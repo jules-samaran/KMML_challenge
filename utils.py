@@ -101,8 +101,9 @@ def get_pred_subms(cfg, type):
         model.fit(X_tr, y_tr)
         train_score = get_accuracy(model, X_tr, y_tr)
         predictions.append(model.predict(X_te))
-        log = "Split {}: train_acc: {:.3f}, val_acc: {:.3f}, selected parameters: {} \n".format(idx, best_val_score,
-                                                                                           train_score, best_param)
+        log = "Split {}: train_acc: {:.3f}, val_acc: {:.3f}, selected parameters: {} \n".format(idx, train_score,
+                                                                                                best_val_score,
+                                                                                                best_param)
         full_log += log
         print("Done Split {}".format(idx))
 
