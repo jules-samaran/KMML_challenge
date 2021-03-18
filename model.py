@@ -152,7 +152,6 @@ class KLR:
     def predict(self, X_test):
         K = kernel_function(self.k_name, X_test, self.X, self.k_params)
         output = K@self.alpha
-        print(output)
         return np.where(output > 0, 1, - 1)
 
 
@@ -177,12 +176,12 @@ def test_KLR():
     assert (y_pred == y_test).all(), print(y_pred - y_test)
 
 
-models_dic = {"SVM": SVM, "KRR": KRR}
+models_dic = {"SVM": SVM, "KRR": KRR, "KLR": KLR}
 
 
 def main():
-    #test_KRR()
-    #test_SVM()
+    test_KRR()
+    test_SVM()
     test_KLR()
 
 

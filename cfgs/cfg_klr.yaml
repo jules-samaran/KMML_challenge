@@ -1,5 +1,5 @@
 ---
-MODEL_NAME: KRR
+MODEL_NAME: KLR
 
 grid_hparams:
   k_name: ["gaussian"]
@@ -9,7 +9,7 @@ grid_hparams:
 DATA:
   type: "numerical"
 
-N_FOLDS: 5
+N_FOLDS: 10
 
 DESCRIPTION: ""
 
