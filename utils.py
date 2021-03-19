@@ -78,7 +78,7 @@ def load_data(idx, split, type):
             x_path = os.path.join(os.getcwd(), "data", "original", "X{}{}.csv".format(split, idx))
             x_df = pd.read_csv(x_path, header=0)
             x = np.array(x_df.iloc[:, 1].values)
-            x = spectrum_phi(x, int(type[-1]))
+            x = spectrum_phi(x, int(type[8:]))
             x = scipy.sparse.csc_matrix(x)
             scipy.sparse.save_npz(path_saved, x)
     else:
