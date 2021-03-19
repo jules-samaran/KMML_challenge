@@ -16,21 +16,22 @@ def spectrum_phi(X, k):
     characters = ["A", "T", "C", "G"]
     cart_prod = k * [characters]
     idx = np.array(list((product(*cart_prod))))
-    idx = np.array(list(map(lambda u: ''.join(u), idx)))
+    idx = np.apply_along_axis(lambda u: ''.join(u), 1, idx)
 
-    lambda_function = lambda x: spectrum_transformation(x, k, idx)
-    transformed_X = np.array(list(map(lambda_function, X)))
+    # Apply transformation to dataset
+    lambda_function = lambda x: spectrum_transformation(x[0], k, idx)
+    transformed_X = np.apply_along_axis(lambda_function, 1, X)
     return transformed_X
 
 
 def test_spectrum_phi():
-    X = np.array(['AATT', 'AATG'])
+    X = np.array([['AATT'], ['ATAT']])
     k = 2
     true_output = np.array([
         [1. ,1. ,0. ,0. ,0. ,1. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0.],
         [0. ,2. ,0. ,0. ,1. ,0. ,0. ,0. ,0. ,0. ,0., 0., 0., 0., 0., 0.]
     ])
-    assert (true_output == spectrum_phi(['AATT', 'ATAT'], 2)).all(), 'Problem with spectrum phi'
+    assert (true_output == spectrum_phi(X, 2)).all(), 'Problem with spectrum phi'
 
 
 def main():
