@@ -4,11 +4,13 @@ import yaml
 from easydict import EasyDict as edict
 
 import numpy as np
+import scipy.sparse
 import pandas as pd
 from datetime import datetime
 from itertools import product
 
 from model import models_dic
+from preprocessing import spectrum_phi
 
 
 def get_param_list(param_grid):
@@ -66,17 +68,30 @@ def grid_search_cv(estimator, param_grid, X, y, n_folds):
 
 
 def load_data(idx, split, type):
-    if type == "raw":
-        suffix = ""
+    if type.startswith("spectrum"):
+        suffix = type
+        x_filename = "X{}{}{}.csv".format(split, idx, suffix)
+        path_saved = os.path.join(os.getcwd(), "data", "processed", x_filename)
+        if os.path.exists(path_saved):
+            x = scipy.sparse.load_npz(path_saved)
+        else:
+            x_path = os.path.join(os.getcwd(), "data", "original", "X{}{}.csv".format(split, idx))
+            x_df = pd.read_csv(x_path, header=0)
+            x = np.array(x_df.iloc[:, 1].values)
+            x = spectrum_phi(x, int(type[-1]))
+            x = scipy.sparse.csc_matrix(x)
+            scipy.sparse.save_npz(path_saved, x)
     else:
         suffix = "_mat100"
-    x_filename = "X{}{}{}.csv".format(split, idx, suffix)
-    x_path = os.path.join(os.getcwd(), "data", x_filename)
-    x_df = pd.read_csv(x_path, header=None, sep=" ")
-    x = np.array(x_df.values)
+
+        x_filename = "X{}{}{}.csv".format(split, idx, suffix)
+        x_path = os.path.join(os.getcwd(), "data", "original", x_filename)
+        x_df = pd.read_csv(x_path, header=None, sep=" ")
+        x = np.array(x_df.values)
+
     if split == "tr":
         y_filename = "Ytr{}.csv".format(idx)
-        y_path = os.path.join(os.getcwd(), "data", y_filename)
+        y_path = os.path.join(os.getcwd(), "data", "original", y_filename)
         y_df = pd.read_csv(y_path)
         y = np.array(y_df.iloc[:, 1].values)
         y = np.where(y == 1, 1, -1)
@@ -126,7 +141,7 @@ def subs_wrapper(cfg_path, subs_dir):
     dir_name = "{}_{}".format(date, cfg.MODEL_NAME)
     save_dir = os.path.join(subs_dir, dir_name)
 
-    preds_df, result_log = get_pred_subms(cfg, type)
+    preds_df, result_log = get_pred_subms(cfg, cfg.DATA.type)
 
     os.mkdir(save_dir)
     shutil.copy(cfg_path, save_dir)
