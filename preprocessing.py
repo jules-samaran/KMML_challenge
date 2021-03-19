@@ -3,32 +3,22 @@ import scipy as sp
 from itertools import product
 
 
-def spectrum_transformation(x, k):
+def spectrum_transformation(x, k, idx):
+    transformed_x = np.zeros(len(idx))
+    for i in range(len(x) - (k - 1)):
+        idx_match = np.argwhere(idx == x[i:i+k])
+        transformed_x[idx_match] += 1
+    return transformed_x
+
+
+def spectrum_phi(X, k):
     # Define all possible substrings
     characters = ["A", "T", "C", "G"]
     cart_prod = k * [characters]
     idx = np.array(list((product(*cart_prod))))
     idx = np.array(list(map(lambda u: ''.join(u), idx)))
 
-    # Find all substrings in x
-    pattern_dict = {}
-    for i in range(len(x) - (k - 1)):
-        if x[i:i+k] in pattern_dict:
-            pattern_dict[x[i:i+k]] += 1
-        else:
-            pattern_dict[x[i:i+k]] = 1
-
-    # Build output vector
-    transformed_x = np.zeros(len(idx))
-    for key, value in pattern_dict.items():
-        idx_match = np.argwhere(idx == key)
-        transformed_x[idx_match] = value
-
-    return transformed_x
-
-
-def spectrum_phi(X, k):
-    lambda_function = lambda x: spectrum_transformation(x, k)
+    lambda_function = lambda x: spectrum_transformation(x, k, idx)
     transformed_X = np.array(list(map(lambda_function, X)))
     return transformed_X
 
