@@ -7,7 +7,7 @@ grid_hparams:
   sigma: [0.001, 0.01, 0.1, 1.]
 
 DATA:
-  type: "spectrum10"
+  type: "mismatching3-9"
 
 N_FOLDS: 5
 

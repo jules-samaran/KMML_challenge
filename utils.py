@@ -10,7 +10,7 @@ from datetime import datetime
 from itertools import product
 
 from model import models_dic
-from preprocessing import spectrum_phi
+from preprocessing import spectrum_phi, mismatch
 
 
 def get_param_list(param_grid):
@@ -70,17 +70,34 @@ def grid_search_cv(estimator, param_grid, X, y, n_folds):
 def load_data(idx, split, type):
     if type.startswith("spectrum"):
         suffix = type
-        x_filename = "X{}{}{}.csv".format(split, idx, suffix)
+        k = int(type[8:])
+        x_filename = "X{}{}{}.npy".format(split, idx, suffix)
         path_saved = os.path.join(os.getcwd(), "data", "processed", x_filename)
         if os.path.exists(path_saved):
-            x = scipy.sparse.load_npz(path_saved)
+            x = np.load(path_saved)
         else:
             x_path = os.path.join(os.getcwd(), "data", "original", "X{}{}.csv".format(split, idx))
             x_df = pd.read_csv(x_path, header=0)
             x = np.array(x_df.iloc[:, 1].values)
-            x = spectrum_phi(x, int(type[8:]))
-            x = scipy.sparse.csc_matrix(x)
-            scipy.sparse.save_npz(path_saved, x)
+            x = spectrum_phi(x, k)
+            np.save(path_saved[:-4], x)
+    elif type.startswith("mismatching"):
+        k = int(type[13:])
+        m = int(type[11])
+        suffix = "spectrum" + str(k)
+        x_filename = "X{}{}{}.npy".format(split, idx, suffix)
+        path_saved = os.path.join(os.getcwd(), "data", "processed", x_filename)
+
+        # load or compute spectrum-k encoding
+        if os.path.exists(path_saved):
+            x = np.load(path_saved)
+        else:
+            x_path = os.path.join(os.getcwd(), "data", "original", "X{}{}.csv".format(split, idx))
+            x_df = pd.read_csv(x_path, header=0)
+            x = np.array(x_df.iloc[:, 1].values)
+            x = spectrum_phi(x, k)
+            np.save(path_saved[:-4], x)
+        x = mismatch(x, k, m)
     else:
         suffix = "_mat100"
 
@@ -106,11 +123,13 @@ def get_pred_subms(cfg, type):
     for idx in range(3):
         X_tr, y_tr = load_data(idx, "tr", type)
         X_te = load_data(idx, "te", type)
+        print("Preprocessing done")
 
         # get hyperparams from CV
         model_class = models_dic[cfg.MODEL_NAME]
         best_val_score, best_param = grid_search_cv(model_class, cfg.grid_hparams, X_tr, y_tr, cfg.N_FOLDS)
         type = cfg.DATA.type
+        print("Grid search done")
 
         model = model_class(**best_param)
         model.fit(X_tr, y_tr)
