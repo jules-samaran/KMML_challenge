@@ -146,7 +146,7 @@ class KLR:
         problem = cp.Problem(objective)
 
         # Solve the problem.
-        problem.solve()
+        problem.solve(verbose=True)
         self.alpha = alpha.value
 
     def predict(self, X_test):
