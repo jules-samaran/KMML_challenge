@@ -67,44 +67,45 @@ def grid_search_cv(estimator, param_grid, X, y, n_folds):
     return best_score, best_param
 
 
+def load_spectrum(split, idx, k):
+    suffix = "spectrum{}".format(k)
+    x_filename = "X{}{}{}.npy".format(split, idx, suffix)
+    path_saved = os.path.join(os.getcwd(), "data", "processed", x_filename)
+    if os.path.exists(path_saved):
+        x = np.load(path_saved)
+    else:
+        x_path = os.path.join(os.getcwd(), "data", "original", "X{}{}.csv".format(split, idx))
+        x_df = pd.read_csv(x_path, header=0)
+        x = np.array(x_df.iloc[:, 1].values)
+        x = spectrum_phi(x, k)
+        np.save(path_saved[:-4], x)
+    return x
+
+
+def load_mat100(split, idx):
+    suffix = "_mat100"
+
+    x_filename = "X{}{}{}.csv".format(split, idx, suffix)
+    x_path = os.path.join(os.getcwd(), "data", "original", x_filename)
+    x_df = pd.read_csv(x_path, header=None, sep=" ")
+    x = np.array(x_df.values)
+    return x
+
+
 def load_data(idx, split, type):
     if type.startswith("spectrum"):
-        suffix = type
         k = int(type[8:])
-        x_filename = "X{}{}{}.npy".format(split, idx, suffix)
-        path_saved = os.path.join(os.getcwd(), "data", "processed", x_filename)
-        if os.path.exists(path_saved):
-            x = np.load(path_saved)
-        else:
-            x_path = os.path.join(os.getcwd(), "data", "original", "X{}{}.csv".format(split, idx))
-            x_df = pd.read_csv(x_path, header=0)
-            x = np.array(x_df.iloc[:, 1].values)
-            x = spectrum_phi(x, k)
-            np.save(path_saved[:-4], x)
+        x = load_spectrum(split, idx, k)
     elif type.startswith("mismatching"):
         k = int(type[13:])
         m = int(type[11])
-        suffix = "spectrum" + str(k)
-        x_filename = "X{}{}{}.npy".format(split, idx, suffix)
-        path_saved = os.path.join(os.getcwd(), "data", "processed", x_filename)
-
-        # load or compute spectrum-k encoding
-        if os.path.exists(path_saved):
-            x = np.load(path_saved)
-        else:
-            x_path = os.path.join(os.getcwd(), "data", "original", "X{}{}.csv".format(split, idx))
-            x_df = pd.read_csv(x_path, header=0)
-            x = np.array(x_df.iloc[:, 1].values)
-            x = spectrum_phi(x, k)
-            np.save(path_saved[:-4], x)
+        x = load_spectrum(split, idx, k)
         x = mismatch(x, k, m)
+    elif type == "mat100":
+        x = load_mat100(split, idx)
     else:
-        suffix = "_mat100"
-
-        x_filename = "X{}{}{}.csv".format(split, idx, suffix)
-        x_path = os.path.join(os.getcwd(), "data", "original", x_filename)
-        x_df = pd.read_csv(x_path, header=None, sep=" ")
-        x = np.array(x_df.values)
+        print("Type {} not recognized, will use mat100".format(type))
+        x = load_mat100(split, idx)
 
     if split == "tr":
         y_filename = "Ytr{}.csv".format(idx)
@@ -116,19 +117,34 @@ def load_data(idx, split, type):
     return x
 
 
+def data_wrapper(idx, split, type_list):
+    if len(type_list) == 1:
+        return load_data(idx, split, type_list[0])
+    else:
+        if split == "tr":
+            y = None
+            xs = []
+            for type in type_list:
+                x, y = load_data(idx, split, type)
+                xs.append(x)
+            x = np.concatenate(xs, axis=1)
+            return x, y
+        else:
+            return np.concatenate([load_data(idx, split, type) for type in type_list], axis=1)
+
+
 def get_pred_subms(cfg, type):
     predictions = []
     full_log = ""
 
     for idx in range(3):
-        X_tr, y_tr = load_data(idx, "tr", type)
-        X_te = load_data(idx, "te", type)
+        X_tr, y_tr = data_wrapper(idx, "tr", type)
+        X_te = data_wrapper(idx, "te", type)
         print("Preprocessing done")
 
         # get hyperparams from CV
         model_class = models_dic[cfg.MODEL_NAME]
         best_val_score, best_param = grid_search_cv(model_class, cfg.grid_hparams, X_tr, y_tr, cfg.N_FOLDS)
-        type = cfg.DATA.type
         print("Grid search done")
 
         model = model_class(**best_param)
@@ -160,7 +176,7 @@ def subs_wrapper(cfg_path, subs_dir):
     dir_name = "{}_{}".format(date, cfg.MODEL_NAME)
     save_dir = os.path.join(subs_dir, dir_name)
 
-    preds_df, result_log = get_pred_subms(cfg, cfg.DATA.type)
+    preds_df, result_log = get_pred_subms(cfg, cfg.DATA.type_list)
 
     os.mkdir(save_dir)
     shutil.copy(cfg_path, save_dir)

@@ -62,7 +62,6 @@ def mismatch(X, k, m):
 
 def test_mismatch():
     X = np.array(['AATT', 'ATAT'])
-
     k = 2
     m = 1
     true_output = np.array([
@@ -72,6 +71,7 @@ def test_mismatch():
     X = spectrum_phi(X, k)
     assert (true_output == mismatch(X, k, m)).all(), \
         'Problem with mismatch, results: {}'.format(mismatch(X, k, m))
+
 
 def main():
     test_spectrum_phi()
