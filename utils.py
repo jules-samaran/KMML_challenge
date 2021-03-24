@@ -46,8 +46,7 @@ def cross_validation(estimator, param_dict, X, y, k_list, n_folds, scale):
         y_train, y_val = y_shuffled[idx_train], y_shuffled[idx_val]
 
         # scale data
-        if scale:
-            X_train, X_val = scale_list(X_train, X_val)
+        X_train, X_val = scale_list(X_train, X_val, scale)
 
         # Initiate and fit classifier
         clf = estimator(k_list, **param_dict)
@@ -150,8 +149,7 @@ def get_pred_subms(cfg, type):
         print("Grid search done")
 
         # scale data
-        if scale:
-            X_tr_l, X_te_l = scale_list(X_tr_l, X_te_l)
+        X_tr_l, X_te_l = scale_list(X_tr_l, X_te_l, scale)
 
         model = model_class(cfg.DATA.k_list, **best_param)
         model.fit(X_tr_l, y_tr)

@@ -2,12 +2,12 @@
 MODEL_NAME: SVM
 
 grid_hparams:
-  lamb: [0.0001]
+  lamb: [0.0001, 0.001]
 
 DATA:
-  type_list: ["mismatching2-7"]
-  scale: True
-  k_list: ["gaussian"]
+  type_list: ["mismatching2-7", "spectrum8"]
+  scale: [true, false]
+  k_list: ["gaussian", "linear"]
 
 N_FOLDS: 5
 

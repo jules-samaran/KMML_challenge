@@ -1,0 +1,3 @@
+Split 0: train_acc: 1.000, val_acc: 0.637, selected parameters: {'lamb': 0.001} 
+Split 1: train_acc: 1.000, val_acc: 0.606, selected parameters: {'lamb': 0.001} 
+Split 2: train_acc: 1.000, val_acc: 0.722, selected parameters: {'lamb': 0.001} 

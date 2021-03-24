@@ -22,13 +22,17 @@ class Scaler:
         return X
 
 
-def scale_list(X_tr_l, X_te_l):
+def scale_list(X_tr_l, X_te_l, scale_l):
     X_scaled_tr, X_scaled_te = [], []
     for k in range(len(X_tr_l)):
-        scaler = Scaler()
-        scaler.fit(X_tr_l[k])
-        X_scaled_tr.append(scaler.transform(X_tr_l[k]))
-        X_scaled_te.append(scaler.transform(X_te_l[k]))
+        if scale_l[k]:
+            scaler = Scaler()
+            scaler.fit(X_tr_l[k])
+            X_scaled_tr.append(scaler.transform(X_tr_l[k]))
+            X_scaled_te.append(scaler.transform(X_te_l[k]))
+        else:
+            X_scaled_tr.append(X_tr_l[k])
+            X_scaled_te.append(X_te_l[k])
     return X_scaled_tr, X_scaled_te
 
 
