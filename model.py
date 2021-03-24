@@ -182,6 +182,12 @@ def test_KLR():
 models_dic = {"SVM": SVM, "KRR": KRR, "KLR": KLR}
 
 
+def get_accuracy(classifier, X, y):
+    y_pred = classifier.predict(X)
+    acc = np.mean(y_pred == y)
+    return acc
+
+
 def main():
     test_KRR()
     test_SVM()

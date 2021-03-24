@@ -6,7 +6,7 @@ grid_hparams:
 
 DATA:
   k_list: ["linear"]
-  type_list: ["spectrum8"]
+  type_list: ["mat100"]
   scale: [false]
 
 N_FOLDS: 5

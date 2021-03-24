@@ -1,4 +1,4 @@
-from utils import get_param_list, get_accuracy, cross_validation, grid_search_cv
+from crossval import get_param_list, get_accuracy, cross_validation, grid_search_cv
 from model import KRR, SVM
 
 
