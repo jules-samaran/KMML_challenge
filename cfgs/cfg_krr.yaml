@@ -2,11 +2,11 @@
 MODEL_NAME: KRR
 
 grid_hparams:
-  lamb: [0.001]
+  lamb: [0.0001, 0.001, 0.1, 1.]
 
 DATA:
   k_list: ["linear"]
-  type_list: ["mat100"]
+  type_list: ["spectrum8"]
   scale: [false]
 
 N_FOLDS: 5
