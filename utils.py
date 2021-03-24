@@ -10,7 +10,7 @@ from datetime import datetime
 from itertools import product
 
 from model import models_dic
-from preprocessing import spectrum_phi, mismatch
+from preprocessing import spectrum_phi, mismatch, Scaler
 
 
 def get_param_list(param_grid):
@@ -28,7 +28,7 @@ def get_accuracy(classifier, X, y):
     return acc
 
 
-def cross_validation(estimator, param_dict, X, y, n_folds):
+def cross_validation(estimator, param_dict, X, y, n_folds, scale):
     n = X.shape[0]
     fold_size = np.int(n/n_folds)
     idx = np.arange(n)
@@ -44,6 +44,13 @@ def cross_validation(estimator, param_dict, X, y, n_folds):
         X_train, X_val = X_shuffled[~idx_val], X_shuffled[idx_val]
         y_train, y_val = y_shuffled[~idx_val], y_shuffled[idx_val]
 
+        # scale data
+        if scale:
+            scaler = Scaler()
+            scaler.fit(X_train)
+            X_train = scaler.transform(X_train)
+            X_val = scaler.transform(X_val)
+
         # Initiate and fit classifier
         clf = estimator(**param_dict)
         clf.fit(X_train, y_train)
@@ -55,12 +62,12 @@ def cross_validation(estimator, param_dict, X, y, n_folds):
     return average_acc / n_folds
 
 
-def grid_search_cv(estimator, param_grid, X, y, n_folds):
+def grid_search_cv(estimator, param_grid, X, y, n_folds, scale):
     param_list = get_param_list(param_grid)
     best_score = 0
     best_param = None
     for param_dict in param_list:
-        acc = cross_validation(estimator, param_dict, X, y, n_folds)
+        acc = cross_validation(estimator, param_dict, X, y, n_folds, scale)
         if acc > best_score:
             best_score = acc
             best_param = param_dict.copy()
@@ -106,7 +113,6 @@ def load_data(idx, split, type):
     else:
         print("Type {} not recognized, will use mat100".format(type))
         x = load_mat100(split, idx)
-
     if split == "tr":
         y_filename = "Ytr{}.csv".format(idx)
         y_path = os.path.join(os.getcwd(), "data", "original", y_filename)
@@ -138,15 +144,22 @@ def get_pred_subms(cfg, type):
     full_log = ""
 
     for idx in range(3):
+        scale = cfg.DATA.scale
         X_tr, y_tr = data_wrapper(idx, "tr", type)
         X_te = data_wrapper(idx, "te", type)
         print("Preprocessing done")
 
         # get hyperparams from CV
         model_class = models_dic[cfg.MODEL_NAME]
-        best_val_score, best_param = grid_search_cv(model_class, cfg.grid_hparams, X_tr, y_tr, cfg.N_FOLDS)
+        best_val_score, best_param = grid_search_cv(model_class, cfg.grid_hparams, X_tr, y_tr, cfg.N_FOLDS, scale)
         print("Grid search done")
 
+        # scale data
+        if scale:
+            scaler = Scaler()
+            scaler.fit(X_tr)
+            X_tr = scaler.transform(X_tr)
+            X_te = scaler.transform(X_te)
         model = model_class(**best_param)
         model.fit(X_tr, y_tr)
         train_score = get_accuracy(model, X_tr, y_tr)

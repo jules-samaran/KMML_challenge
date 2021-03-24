@@ -2,6 +2,26 @@ import numpy as np
 from itertools import product
 
 
+class Scaler:
+    def __init__(self):
+        self.mean = None
+        self.std = None
+        self.keep_cols = []
+
+    def fit(self, X):
+        self.mean = np.mean(X, axis=0)
+        self.std = np.std(X, axis=0)
+        self.keep_cols = np.argwhere(self.std > 0).reshape(-1)
+        self.mean = self.mean[self.keep_cols]
+        self.std = self.std[self.keep_cols]
+
+    def transform(self, X):
+        X = X[:, self.keep_cols]
+        X = X - self.mean
+        X = X / self.std
+        return X
+
+
 def get_idx_pattern(k):
     # Define all possible substrings
     characters = ["A", "T", "C", "G"]
