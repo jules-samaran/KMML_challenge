@@ -10,7 +10,7 @@ from datetime import datetime
 from itertools import product
 
 from model import models_dic
-from preprocessing import spectrum_phi, mismatch, Scaler
+from preprocessing import spectrum_phi, mismatch, Scaler, scale_list
 
 
 def get_param_list(param_grid):
@@ -28,12 +28,12 @@ def get_accuracy(classifier, X, y):
     return acc
 
 
-def cross_validation(estimator, param_dict, X, y, n_folds, scale):
-    n = X.shape[0]
+def cross_validation(estimator, param_dict, X, y, k_list, n_folds, scale):
+    n = X[0].shape[0]
     fold_size = np.int(n/n_folds)
     idx = np.arange(n)
     np.random.shuffle(idx)
-    X_shuffled, y_shuffled = X[idx], y[idx]
+    X_shuffled, y_shuffled = [x[idx] for x in X], y[idx]
     average_acc = 0
 
     for i in range(n_folds):
@@ -41,18 +41,16 @@ def cross_validation(estimator, param_dict, X, y, n_folds, scale):
         idx_val_start = i * fold_size
         idx_val_end = (i + 1) * fold_size
         idx_val = np.arange(idx_val_start, idx_val_end)
-        X_train, X_val = X_shuffled[~idx_val], X_shuffled[idx_val]
-        y_train, y_val = y_shuffled[~idx_val], y_shuffled[idx_val]
+        idx_train = np.delete(np.arange(n), idx_val)
+        X_train, X_val = [x[idx_train] for x in X_shuffled], [x[idx_val] for x in X_shuffled]
+        y_train, y_val = y_shuffled[idx_train], y_shuffled[idx_val]
 
         # scale data
         if scale:
-            scaler = Scaler()
-            scaler.fit(X_train)
-            X_train = scaler.transform(X_train)
-            X_val = scaler.transform(X_val)
+            X_train, X_val = scale_list(X_train, X_val)
 
         # Initiate and fit classifier
-        clf = estimator(**param_dict)
+        clf = estimator(k_list, **param_dict)
         clf.fit(X_train, y_train)
 
         # Predict and evaluate on validation set
@@ -62,12 +60,12 @@ def cross_validation(estimator, param_dict, X, y, n_folds, scale):
     return average_acc / n_folds
 
 
-def grid_search_cv(estimator, param_grid, X, y, n_folds, scale):
+def grid_search_cv(estimator, param_grid, X, y, k_list, n_folds, scale):
     param_list = get_param_list(param_grid)
     best_score = 0
     best_param = None
     for param_dict in param_list:
-        acc = cross_validation(estimator, param_dict, X, y, n_folds, scale)
+        acc = cross_validation(estimator, param_dict, X, y, k_list, n_folds, scale)
         if acc > best_score:
             best_score = acc
             best_param = param_dict.copy()
@@ -124,19 +122,15 @@ def load_data(idx, split, type):
 
 
 def data_wrapper(idx, split, type_list):
-    if len(type_list) == 1:
-        return load_data(idx, split, type_list[0])
+    if split == "tr":
+        y = None
+        xs = []
+        for type in type_list:
+            x, y = load_data(idx, split, type)
+            xs.append(x)
+        return xs, y
     else:
-        if split == "tr":
-            y = None
-            xs = []
-            for type in type_list:
-                x, y = load_data(idx, split, type)
-                xs.append(x)
-            x = np.concatenate(xs, axis=1)
-            return x, y
-        else:
-            return np.concatenate([load_data(idx, split, type) for type in type_list], axis=1)
+        return [load_data(idx, split, type) for type in type_list]
 
 
 def get_pred_subms(cfg, type):
@@ -145,25 +139,24 @@ def get_pred_subms(cfg, type):
 
     for idx in range(3):
         scale = cfg.DATA.scale
-        X_tr, y_tr = data_wrapper(idx, "tr", type)
-        X_te = data_wrapper(idx, "te", type)
+        X_tr_l, y_tr = data_wrapper(idx, "tr", type)
+        X_te_l = data_wrapper(idx, "te", type)
         print("Preprocessing done")
 
         # get hyperparams from CV
         model_class = models_dic[cfg.MODEL_NAME]
-        best_val_score, best_param = grid_search_cv(model_class, cfg.grid_hparams, X_tr, y_tr, cfg.N_FOLDS, scale)
+        best_val_score, best_param = grid_search_cv(model_class, cfg.grid_hparams, X_tr_l, y_tr, cfg.DATA.k_list,
+                                                    cfg.N_FOLDS, scale)
         print("Grid search done")
 
         # scale data
         if scale:
-            scaler = Scaler()
-            scaler.fit(X_tr)
-            X_tr = scaler.transform(X_tr)
-            X_te = scaler.transform(X_te)
-        model = model_class(**best_param)
-        model.fit(X_tr, y_tr)
-        train_score = get_accuracy(model, X_tr, y_tr)
-        predictions.append(model.predict(X_te))
+            X_tr_l, X_te_l = scale_list(X_tr_l, X_te_l)
+
+        model = model_class(cfg.DATA.k_list, **best_param)
+        model.fit(X_tr_l, y_tr)
+        train_score = get_accuracy(model, X_tr_l, y_tr)
+        predictions.append(model.predict(X_te_l))
         log = "Split {}: train_acc: {:.3f}, val_acc: {:.3f}, selected parameters: {} \n".format(idx, train_score,
                                                                                                 best_val_score,
                                                                                                 best_param)

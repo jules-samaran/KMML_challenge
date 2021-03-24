@@ -1,6 +1,6 @@
 import numpy as np
 import cvxpy as cp
-from kernel import kernel_function
+from kernel import kernel_wrapper
 from sklearn.linear_model import Ridge
 
 
@@ -12,13 +12,13 @@ class KRR:
         self.X = None
         self.k_name = k_name
         self.alpha = None
-        self.k_params = {"gamma": None}
+        self.k_params = None
 
     def fit(self, X, y):
         # Problem data.
         self.X = X
-        self.k_params["gamma"] = 1 / X.shape[1]
-        K = kernel_function(self.k_name, self.X, self.X, self.k_params)
+        self.k_params = [{"gamma": 1 / x.shape[1]} for x in X]
+        K = kernel_wrapper(self.k_name, self.X, self.X, self.k_params)
         n = K.shape[0]
 
         # Construct the problem.
@@ -34,7 +34,7 @@ class KRR:
         self.alpha = alpha.value
 
     def predict(self, X_test):
-        K = kernel_function(self.k_name, X_test, self.X, self.k_params)
+        K = kernel_wrapper(self.k_name, X_test, self.X, self.k_params)
         pred = K @ self.alpha
         pred = np.where(pred > 0, 1, -1)
         return pred
@@ -63,7 +63,7 @@ def test_KRR():
         except:
             raise NameError('Problem with predict function.')
         alpha_opt = krr.alpha
-        alpha_ana = np.linalg.inv(kernel_function("linear", krr.X, krr.X) + lamb * n * np.eye(n)) @ y
+        alpha_ana = np.linalg.inv(kernel_wrapper("linear", krr.X, krr.X) + lamb * n * np.eye(n)) @ y
         err = np.linalg.norm(alpha_ana - alpha_opt)
 
         assert err < tol, f'solution to far away from the real one {err:.3f}'
@@ -79,14 +79,14 @@ class SVM:
         self.k_name = k_name
         self.lamb = lamb
         self.X = None
-        self.k_params = {"gamma": None}
+        self.k_params = None
 
     def fit(self, X, y):
-        n = X.shape[0]
+        n = X[0].shape[0]
 
         # initialize
-        self.k_params["gamma"] = 1 / X.shape[1]
-        K = kernel_function(self.k_name, X, X, self.k_params)
+        self.k_params = [{"gamma": 1 / x.shape[1]} for x in X]
+        K = kernel_wrapper(self.k_name, X, X, self.k_params)
 
         # optimize
         alpha = cp.Variable(n)
@@ -98,7 +98,7 @@ class SVM:
         self.X = X
 
     def predict(self, X_test):
-        K = kernel_function(self.k_name, X_test, self.X, self.k_params)
+        K = kernel_wrapper(self.k_name, X_test, self.X, self.k_params)
         output = K@self.alpha
         return np.where(output > 0, 1, - 1)
 
@@ -131,13 +131,13 @@ class KLR:
         self.k_name = k_name
         self.lamb = lamb
         self.X = None
-        self.k_params = {"gamma": None}
+        self.k_params = None
 
     def fit(self, X, y):
         # Problem data.
         self.X = X
-        self.k_params["gamma"] = 1 / X.shape[1]
-        K = kernel_function(self.k_name, self.X, self.X, self.k_params)
+        self.k_params = [{"gamma": 1 / x.shape[1]} for x in X]
+        K = kernel_wrapper(self.k_name, self.X, self.X, self.k_params)
         n = K.shape[0]
 
         # Construct the problem.
@@ -153,7 +153,7 @@ class KLR:
         self.alpha = alpha.value
 
     def predict(self, X_test):
-        K = kernel_function(self.k_name, X_test, self.X, self.k_params)
+        K = kernel_wrapper(self.k_name, X_test, self.X, self.k_params)
         output = K@self.alpha
         return np.where(output > 0, 1, - 1)
 

@@ -2,11 +2,11 @@
 MODEL_NAME: KRR
 
 grid_hparams:
-  k_name: ["gaussian"]
-  lamb: [0.0001]
+  lamb: [0.001, 0.01, 0.1, 1.]
 
 DATA:
-  type_list: ["mismatching2-7"]
+  k_list: ["linear"]
+  type_list: ["spectrum8"]
   scale: true
 
 N_FOLDS: 5
