@@ -6,17 +6,18 @@ from sklearn.linear_model import Ridge
 
 class KRR:
 
-    def __init__(self, k_name, lamb=1., sigma=1.):
+    def __init__(self, k_name, lamb=1.):
         self.name = "KRR"
         self.lamb = lamb
         self.X = None
         self.k_name = k_name
         self.alpha = None
-        self.k_params = {"sigma": sigma}
+        self.k_params = {"gamma": None}
 
     def fit(self, X, y):
         # Problem data.
         self.X = X
+        self.k_params["gamma"] = 1 / X.shape[1]
         K = kernel_function(self.k_name, self.X, self.X, self.k_params)
         n = K.shape[0]
 
@@ -72,18 +73,19 @@ def test_KRR():
 
 class SVM:
 
-    def __init__(self, k_name, lamb=1., sigma=1.):
+    def __init__(self, k_name, lamb=1.):
         self.name = "SVM"
         self.alpha = None
         self.k_name = k_name
         self.lamb = lamb
         self.X = None
-        self.k_params = {"sigma": sigma}
+        self.k_params = {"gamma": None}
 
     def fit(self, X, y):
         n = X.shape[0]
 
         # initialize
+        self.k_params["gamma"] = 1 / X.shape[1]
         K = kernel_function(self.k_name, X, X, self.k_params)
 
         # optimize
@@ -123,17 +125,18 @@ def test_SVM():
 
 class KLR:
 
-    def __init__(self, k_name, lamb=1., sigma=1.):
+    def __init__(self, k_name, lamb=1.):
         self.name = "KLR"
         self.alpha = None
         self.k_name = k_name
         self.lamb = lamb
         self.X = None
-        self.k_params = {"sigma": sigma}
+        self.k_params = {"gamma": None}
 
     def fit(self, X, y):
         # Problem data.
         self.X = X
+        self.k_params["gamma"] = 1 / X.shape[1]
         K = kernel_function(self.k_name, self.X, self.X, self.k_params)
         n = K.shape[0]
 
