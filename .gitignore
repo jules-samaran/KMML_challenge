@@ -1,3 +1,4 @@
-/submissions/
-/data/
+/submissions/*
+/data/original/*
+/data/processed/*
 /.idea
