@@ -2,14 +2,13 @@
 MODEL_NAME: KLR
 
 grid_hparams:
-  k_name: ["linear"]
-  lamb: [0.001, 0.01, 0.1, 1.]
-  sigma: [0.001, 0.01, 0.1, 1.]
+  lamb: [0.0001, 0.001, 0.1, 1.]
 
 DATA:
-  type: "mismatching2-7"
+  k_list: ["gaussian"]
+  type_list: ["mismatching2-7"]
+  scale: [false]
 
 N_FOLDS: 5
 
 DESCRIPTION: ""
-
