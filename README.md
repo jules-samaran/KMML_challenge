@@ -12,7 +12,7 @@ You can use the following kernels:
 - Spectrum k
 - Mismatch k-m
 
-With k the length of subsequences considered and m the allowed number of mismatch in the subsequences. For the last two kernels, we preferred to compute the features of the samples projected in the corresponding RKHS and save it because it takes a lot of time to compute. The features are saved between in the data/processed folder. As they are considered like features, if you want to use it, you should use the linear kernel but you could also try with the gaussian kernel. 
+k corresponds to the length of subsequences considered and m to the possible number of mismatch in the subsequences. For the last two kernels, we preferred to compute the features of the samples projected in the corresponding RKHS and save it because it takes a lot of time to compute. The features are saved in the *data/processed folder*. As they are considered like features, if you want to use it, you should use the linear kernel but you could also try with the gaussian kernel. 
 
 As an example, the code is ready to make predictions with a mismatch kernel 7-2 by running the main.py file after following the getting started section. 
 
@@ -47,7 +47,7 @@ data
 └── processed
 ```
 
-You have to put the original files as shown on the above tree in the folder original, the folder processed is here to save features that are long to compute and to save time.
+You have to put the original files as shown on the above tree in the folder *data/original*, the folder *data/processed* is here to save features that take a long time to compute.
 
 ## How to run the code
 
