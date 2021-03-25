@@ -6,6 +6,15 @@ from model import get_accuracy
 
 
 def get_param_list(param_grid):
+    """
+    This function computes all possible combinations of hyperparameters for gridsearch.
+
+    :param param_grid: dict of list
+        Dict of list with all values to test for each hyperparameters
+
+    :return: list of dict
+        List of Dict with all all possible combinations of hyperparameters for gridsearch
+    """
     param_list = []
     keys = param_grid.keys()
     values = param_grid.values()
@@ -15,6 +24,20 @@ def get_param_list(param_grid):
 
 
 def cross_validation(estimator, param_dict, X, y, k_list, n_folds, scale):
+    """
+    This function performs cross validation for a given estimator and a set of hyperparameters.
+
+    :param estimator: estimator class
+    :param param_dict: dict
+    :param X: array
+    :param y: array
+    :param k_list: list of strings
+    :param n_folds: int
+    :param scale: list of booleans
+
+    :return acc: float
+        Mean accuracy computed with cross validation.
+    """
     n = X[0].shape[0]
     fold_size = np.int(n/n_folds)
     idx = np.arange(n)
@@ -42,10 +65,25 @@ def cross_validation(estimator, param_dict, X, y, k_list, n_folds, scale):
         acc_score = get_accuracy(clf, X_val, y_val)
         average_acc += acc_score
 
-    return average_acc / n_folds
+    acc = average_acc / n_folds
+    return acc
 
 
 def grid_search_cv(estimator, param_grid, X, y, k_list, n_folds, scale):
+    """
+    This functions performs gridsearch to find the best set of hyperparameters.
+
+    :param estimator: estimator class
+    :param param_grid: dict
+    :param X: array
+    :param y: array
+    :param k_list: list of strings
+    :param n_folds: int
+    :param scale: list of booleans
+
+    :return: float, dict
+        Return the best performance and the best hyperparmaters.
+    """
     param_list = get_param_list(param_grid)
     best_score = 0
     best_param = None

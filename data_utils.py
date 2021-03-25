@@ -2,10 +2,24 @@ import os
 
 import numpy as np
 import pandas as pd
+
 from preprocessing import spectrum_phi, mismatch
 
 
 def load_spectrum(split, idx, k):
+    """
+    Load saved spectrum features or compute them.
+
+    :param split: str
+        tr or te
+    :param idx: int
+        0, 1 or 2
+    :param k: int
+        length of kmers
+
+    :return: array
+        Array with spectrum features.
+    """
     suffix = "spectrum{}".format(k)
     x_filename = "X{}{}{}.npy".format(split, idx, suffix)
     path_saved = os.path.join(os.getcwd(), "data", "processed", x_filename)
@@ -21,6 +35,15 @@ def load_spectrum(split, idx, k):
 
 
 def load_mat100(split, idx):
+    """
+    Load mat100 features
+    :param split: str
+        tr or te
+    :param idx: int
+        0, 1 or 2
+    :return: array
+        Array with mat100 features.
+    """
     suffix = "_mat100"
 
     x_filename = "X{}{}{}.csv".format(split, idx, suffix)
@@ -31,6 +54,20 @@ def load_mat100(split, idx):
 
 
 def load_data(idx, split, type):
+    """
+    Wrapper function to load data.
+
+    :param split: str
+        tr or te
+    :param idx: int
+        0, 1 or 2
+    :param type: str
+        Type of features to load
+
+    :return: array
+        Load features (and labels when train is loaded)
+
+    """
     if type.startswith("spectrum"):
         k = int(type[8:])
         x = load_spectrum(split, idx, k)
@@ -55,6 +92,19 @@ def load_data(idx, split, type):
 
 
 def data_wrapper(idx, split, type_list):
+    """
+    Big wrapper function to load all data when more than one type of features.
+
+    :param split: str
+        tr or te
+    :param idx: int
+        0, 1 or 2
+    :param type_list: list of str
+        Types of features to load
+
+    :return: list of arrays
+        List with features in different arrays depending on feature type.
+    """
     if split == "tr":
         y = None
         xs = []
