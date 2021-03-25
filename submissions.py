@@ -9,7 +9,7 @@ from datetime import datetime
 
 from model import models_dic, get_accuracy
 from preprocessing import scale_list
-from data_utils import data_wrapper
+from data import data_wrapper
 from crossval import grid_search_cv
 
 

@@ -1,6 +1,7 @@
 import os
 
-from subms_utils import subs_wrapper
+from submissions import subs_wrapper
+
 
 subs_dir = os.path.join(os.getcwd(), "submissions")
 cfg_paths = [os.path.join(os.getcwd(), "cfgs", "cfg_krr.yaml")]
