@@ -1,7 +1,6 @@
 import numpy as np
 import cvxpy as cp
 from kernel import kernel_wrapper
-from sklearn.linear_model import Ridge
 
 
 class KRR:
