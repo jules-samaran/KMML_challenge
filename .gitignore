@@ -1,4 +1,6 @@
 /submissions/*
 /data/original/*
 /data/processed/*
+!**/.gitkeep
 /.idea
+**/__pycache__
