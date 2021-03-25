@@ -1,4 +1,5 @@
-# KMML_challenge
+# KMML challenge
+This repository contains all the code used for the challenge of the course MVA Kernel Methods for Machine learning
 [Lien du challenge](https://www.kaggle.com/c/machine-learning-with-kernel-methods-2021/overview/evaluation)
 
 ## Bibliography
