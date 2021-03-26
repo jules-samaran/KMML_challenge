@@ -14,13 +14,14 @@ You can use the following kernels:
 
 k corresponds to the length of subsequences considered and m to the possible number of mismatch in the subsequences. For the last two kernels, we preferred to compute the features of the samples projected in the corresponding RKHS and save it because it takes a lot of time to compute. The features are saved in the *data/processed folder*. As they are considered like features, if you want to use it, you should use the linear kernel but you could also try with the gaussian kernel. 
 
-As an example, the code is ready to make predictions with a mismatch kernel 7-2 and a KRR algorithm by running the main.py file after following the getting started section. 
-
-# Getting started
+# Reproducing our results
 
 ## Requirements
 
-The easiest way to use our code is to create a new virtual environment, clone this repository and to install the required packages with the requirements.txt files
+The easiest way to use our code is to create a new virtual environment, clone this repository and to install the required packages with the requirements.txt files by running from the root of the project directory:
+```bash
+pip install -r requirements.txt
+```
 
 ## Directory structure 
 
@@ -49,9 +50,16 @@ data
 
 You have to put the original files as shown on the above tree in the folder *data/original*, the folder *data/processed* is here to save features that take a long time to compute.
 
-## How to run the code
+## Running the method
 
-To run the code, you have to choose which algorithm you want to use among Kernel Ridge Regression, Kernel Logistic Regression and Kernel Support Vector Machines by specifying it in the following line of the main.py file. For instance, in the exemple below, KRR will be used. Instead of *cfg_krr.yaml* it should be *cfg_klr.yaml* or *cfg_svm.yaml*
+To reproduce our best submission, simply run `reproduce_best.py`
+We obtained our best submission by taking a majority voting on the predictions of three methods. Therefore to reproduce it three runs must be made beforehand which means that it will take some time. The array of test predictions `Yte.csv` will be saved inside a folder whose name is <date>_best_submission  inside the submissions directory.
+
+To reproduce our second best sunmission, simpy run `reproduce_second_best.py`, it will run the gaussian kernel on the mismatch2-7 embedding with a kernel ridge regression. The array of test predictions `Yte.csv` will be saved inside a folder whose name is <date>_KRR  inside the submissions directory.
+
+# Playing around
+
+To run with other settings you have to choose which algorithm you want to use among Kernel Ridge Regression, Kernel Logistic Regression and Kernel Support Vector Machines by specifying it in the following line of the main.py file. For instance, in the exemple below, KRR will be used. Instead of *cfg_krr.yaml* it should be *cfg_klr.yaml* or *cfg_svm.yaml*
 ```
 cfg_paths = [os.path.join(os.getcwd(), "cfgs", "cfg_krr.yaml")]
 ```
@@ -75,11 +83,9 @@ N_FOLDS: 5
 DESCRIPTION: ""
 ```
 
-You can change the number of arguments of *k_list*, *type_list* and *scale* by changing the number of elements in the list. Make sure that the length of the three lists are the same. 
+You can change the number of arguments of *k_list*, *type_list* and *scale* by changing the number of elements in the list. Make sure that the length of the three lists are the same. If you put several elements in each list, the kernel used will be the sum of all the kernels you specified.
 
 Possible arguments for those lists are:
 - k_list: "linear", "gaussian"
 - type_list: "mat100", "spectrum{k}", "mismatching{m}-{k}"
-- scale: true, false
-
-Finally, run the main.py file and your submission will be saved in the submission folder. 
+- scale: true, false (whether or not to center and scale the embedded features)
