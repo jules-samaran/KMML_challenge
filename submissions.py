@@ -65,14 +65,15 @@ def subs_wrapper(cfg_path, subs_dir):
 
     os.mkdir(save_dir)
     shutil.copy(cfg_path, save_dir)
-    preds_df.to_csv(os.path.join(save_dir, "predictions.csv"), index=False)
+    preds_df.to_csv(os.path.join(save_dir, "Yte.csv"), index=False)
     with open(os.path.join(save_dir, "log.txt"), "w") as text_file:
         text_file.write(result_log)
     cfg_name = os.path.split(cfg_path)[-1]
     print("Done with {}.".format(cfg_name))
+    return os.path.join(save_dir, "Yte.csv")
 
 
-def ensemble_preds(csv_paths=[]):
+def ensemble_preds(name_dir, csv_paths=[]):
     preds = [pd.read_csv(path, header=0)["Bound"].values.reshape((-1, 1)) for path in csv_paths]
     preds_array = np.concatenate(preds, axis=1)
     mean_array = np.mean(preds_array, axis=1)
@@ -81,19 +82,20 @@ def ensemble_preds(csv_paths=[]):
                                            ensbl_pred.reshape((-1, 1))), axis=1),
                            columns=["Id", "Bound"])
     date = datetime.now().strftime("%d_%H:%M:%S:")
-    dir_name = "{}_{}".format(date, "ensemble")
+    dir_name = "{}_{}".format(date, name_dir)
     save_dir = os.path.join("submissions/", dir_name)
 
     os.mkdir(save_dir)
     with open(os.path.join(save_dir, "list_ensemble.txt"), "w") as text_file:
         text_file.write(str(csv_paths))
-    pred_df.to_csv(os.path.join(save_dir, "predictions.csv"), index=False)
+    pred_df.to_csv(os.path.join(save_dir, "Yte.csv"), index=False)
+    print("Results saved at {}".format(os.path.join(save_dir, "Yte.csv")))
 
 
 def main():
     csv_paths = ["submissions/24_16:59:26:_KRR/predictions.csv", "submissions/24_14:09:24:_SVM/predictions.csv",
                  "submissions/24_18:34:35:_KRR/predictions.csv"]
-    ensemble_preds(csv_paths)
+    ensemble_preds("ensemble", csv_paths)
 
 
 if __name__ == "__main__":

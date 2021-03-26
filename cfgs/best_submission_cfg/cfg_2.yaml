@@ -1,0 +1,14 @@
+---
+MODEL_NAME: KRR
+
+grid_hparams:
+  lamb: [0.0001]
+
+DATA:
+  k_list: ["gaussian"]
+  type_list: ["mismatching2-6"]
+  scale: [true]
+
+N_FOLDS: 5
+
+DESCRIPTION: ""

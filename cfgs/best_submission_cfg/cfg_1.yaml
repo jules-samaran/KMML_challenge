@@ -1,0 +1,15 @@
+---
+MODEL_NAME: SVM
+
+grid_hparams:
+  lamb: [0.0001]
+
+DATA:
+  k_list: ["gaussian"]
+  type_list: ["mismatching2-7"]
+  scale: [true]
+
+N_FOLDS: 5
+
+DESCRIPTION: ""
+
